@@ -57,14 +57,14 @@ export function AiChatWidget({
   };
 
   return (
-    <div className="pointer-events-none absolute bottom-4 right-4 z-30 flex flex-col items-end gap-2">
+    <div className="pointer-events-none absolute right-4 bottom-4 z-30 flex flex-col items-end gap-2">
       {open && (
         <section
           aria-label="Ascesis assistant"
           className="pointer-events-auto flex h-[30rem] max-h-[70vh] w-[22rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-card-border bg-card shadow-float"
         >
-          <header className="flex items-center gap-2 border-b border-card-border bg-olive-900 px-3 py-2 text-beige">
-            <span className="flex size-7 items-center justify-center overflow-hidden rounded-full bg-beige-100">
+          <header className="flex items-center gap-2 border-b border-chrome-border bg-chrome px-3 py-2 text-chrome-fg">
+            <span className="flex size-7 items-center justify-center overflow-hidden rounded-full bg-chrome-fg">
               <Image
                 src="/logo.png"
                 alt=""
@@ -74,8 +74,8 @@ export function AiChatWidget({
               />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold leading-tight">Assistant</p>
-              <p className="text-[11px] leading-tight text-beige/70">
+              <p className="text-sm leading-tight font-semibold">Assistant</p>
+              <p className="text-[11px] leading-tight text-chrome-fg/70">
                 Describe what you want. Nothing saves until you accept.
               </p>
             </div>
@@ -83,7 +83,7 @@ export function AiChatWidget({
               <button
                 type="button"
                 onClick={onClear}
-                className="rounded-md px-1.5 py-1 text-[11px] text-beige/70 hover:bg-beige/10 hover:text-beige"
+                className="rounded-md px-1.5 py-1 text-[11px] text-chrome-fg/70 hover:bg-chrome-fg/10 hover:text-chrome-fg"
               >
                 Clear
               </button>
@@ -92,7 +92,7 @@ export function AiChatWidget({
               type="button"
               aria-label="Close assistant"
               onClick={() => setOpen(false)}
-              className="rounded-md p-1 text-beige/70 hover:bg-beige/10 hover:text-beige"
+              className="rounded-md p-1 text-chrome-fg/70 hover:bg-chrome-fg/10 hover:text-chrome-fg"
             >
               <X size={16} />
             </button>
@@ -100,15 +100,15 @@ export function AiChatWidget({
 
           <div
             ref={scrollRef}
-            className="min-h-0 flex-1 space-y-3 overflow-y-auto wc-scroll bg-beige/40 p-3"
+            className="wc-scroll min-h-0 flex-1 space-y-3 overflow-y-auto bg-beige/40 p-3"
           >
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-xs leading-relaxed text-ink-soft">
                   Tell me what you are trying to do and I will draft the whole
-                  thing: the arc, its rules, your monthly targets, this week&apos;s
-                  priorities and today&apos;s tasks. You review it before anything is
-                  created.
+                  thing: the arc, its rules, your monthly targets, this
+                  week&apos;s priorities and today&apos;s tasks. You review it
+                  before anything is created.
                 </p>
                 <div className="space-y-1.5">
                   {STARTERS.map((starter) => (
@@ -118,7 +118,10 @@ export function AiChatWidget({
                       onClick={() => onSend(starter)}
                       className="flex w-full items-start gap-1.5 rounded-lg border border-card-border bg-card px-2.5 py-2 text-left text-xs text-ink transition-colors hover:border-teal"
                     >
-                      <Sparkles size={12} className="mt-0.5 shrink-0 text-olive" />
+                      <Sparkles
+                        size={12}
+                        className="mt-0.5 shrink-0 text-olive"
+                      />
                       {starter}
                     </button>
                   ))}
@@ -189,7 +192,7 @@ export function AiChatWidget({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "pointer-events-auto flex size-14 items-center justify-center rounded-full border-2 bg-beige-100 shadow-float transition-transform hover:scale-105",
+          "pointer-events-auto flex size-14 items-center justify-center rounded-full border-2 bg-chrome-fg shadow-float transition-transform hover:scale-105",
           open ? "border-olive" : "border-card-border",
         )}
       >

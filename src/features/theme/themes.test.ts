@@ -16,7 +16,9 @@ const START = "/* --- GENERATED THEME TOKENS START --- */";
 const END = "/* --- GENERATED THEME TOKENS END --- */";
 
 function generatedBlockFromCss(): string {
-  const css = readFileSync(GLOBALS, "utf8");
+  // Git may check this file out with CRLF on Windows. Only the content is
+  // under test, not the line endings.
+  const css = readFileSync(GLOBALS, "utf8").replace(/\r\n/g, "\n");
   const start = css.indexOf(START);
   const end = css.indexOf(END);
   expect(start, "start marker missing from globals.css").toBeGreaterThan(-1);
