@@ -106,12 +106,11 @@ function Canvas({
     return () => cancelAnimationFrame(id);
   }, [tab, visibleNodes, buildNodes, setNodes, fitView]);
 
-  // V, H and R switch tools, the way every canvas app does it.
+  // V and H switch tools, the way every canvas app does it.
   useEffect(() => {
     const SHORTCUTS: Record<string, ToolMode> = {
       v: "select",
       h: "hand",
-      r: "resize",
     };
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
@@ -184,13 +183,15 @@ function Canvas({
             zoomOnScroll={false}
             zoomOnPinch
             zoomOnDoubleClick={false}
-            // Each tool has to do something genuinely different, or it is
-            // decorative. Select drags a marquee over empty canvas; hand drags
-            // the canvas itself; resize holds cards still so a grip drag cannot
-            // be confused with a move. Middle-drag and Space+drag always pan, so
-            // navigating never requires switching tool.
-            panOnDrag={tool === "hand" ? true : [1]}
-            selectionOnDrag={tool === "select"}
+            // Dragging empty canvas pans in both tools; with half a dozen cards
+            // a selection box has little use, so it is behind Shift. The tools
+            // differ over a card: select moves it by its header and resizes it
+            // by its handles, hand pans straight across it and touches nothing.
+            // Middle-drag and Space+drag pan too, so navigating never requires
+            // a tool switch.
+            panOnDrag
+            selectionOnDrag={false}
+            selectionKeyCode="Shift"
             selectionMode={SelectionMode.Partial}
             panActivationKeyCode="Space"
             nodesConnectable={false}

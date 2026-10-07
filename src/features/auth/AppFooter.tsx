@@ -21,16 +21,16 @@ export function AppFooter() {
       </div>
       <div className="hidden items-center gap-3 sm:flex">
         <span>
-          <kbd className="rounded bg-chrome-fg/10 px-1">V</kbd> select, drag to
-          box
+          <kbd className="rounded bg-chrome-fg/10 px-1">V</kbd> select: click a
+          card to resize, drag canvas to pan
         </span>
         <span>
-          <kbd className="rounded bg-chrome-fg/10 px-1">H</kbd> hand, drag to
-          pan
+          <kbd className="rounded bg-chrome-fg/10 px-1">H</kbd> hand: pan
+          anywhere, move nothing
         </span>
         <span>
-          <kbd className="rounded bg-chrome-fg/10 px-1">Space</kbd> + drag to
-          pan
+          <kbd className="rounded bg-chrome-fg/10 px-1">Shift</kbd> + drag to
+          box-select
         </span>
       </div>
     </footer>

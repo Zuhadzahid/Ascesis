@@ -1,12 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useState } from "react";
 import {
   Handle,
   NodeResizeControl,
   Position,
   ResizeControlVariant,
+  useStore,
   useUpdateNodeInternals,
 } from "@xyflow/react";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
@@ -28,6 +29,64 @@ const CORNERS = [
   "bottom-right",
 ] as const;
 const EDGES = ["top", "right", "bottom", "left"] as const;
+
+/**
+ * The handles a selected card shows: four corner grips and four invisible edge
+ * strips, the way Figma, Miro and tldraw draw a selection.
+ *
+ * Mounted only while the card is selected, so this is also the only thing on
+ * the canvas that re-renders on zoom. It reads the zoom so the grips can scale
+ * by its inverse and stay the same size on screen — a grip that shrinks to a
+ * speck at 40% and balloons at 150% is what made the old ones feel cheap.
+ */
+function SelectionHandles({
+  minWidth,
+  minHeight,
+  onLive,
+  onCommit,
+}: {
+  minWidth: number;
+  minHeight: number;
+  onLive: (w: number, h: number) => void;
+  onCommit: (w: number, h: number) => void;
+}) {
+  const zoom = useStore((s) => s.transform[2]);
+  const style = { "--pos-inv-zoom": 1 / zoom } as CSSProperties;
+
+  return (
+    <div style={style} className="contents">
+      {/* Edges: no visible chrome, just a wider grab strip and a cursor. */}
+      {EDGES.map((edge) => (
+        <NodeResizeControl
+          key={edge}
+          position={edge}
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onResize={(_, p) => onLive(p.width, p.height)}
+          onResizeEnd={(_, p) => onCommit(p.width, p.height)}
+          variant={ResizeControlVariant.Line}
+          className={`pos-resize-edge pos-resize-edge--${edge}`}
+        />
+      ))}
+
+      {/* Corners: a small square grip. */}
+      {CORNERS.map((corner) => (
+        <NodeResizeControl
+          key={corner}
+          position={corner}
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onResize={(_, p) => onLive(p.width, p.height)}
+          onResizeEnd={(_, p) => onCommit(p.width, p.height)}
+          className={`pos-resize-corner pos-resize-corner--${corner}`}
+          style={{ background: "transparent", border: "none" }}
+        >
+          <span className="pos-grip" aria-hidden />
+        </NodeResizeControl>
+      ))}
+    </div>
+  );
+}
 
 /**
  * Shared chrome for every canvas card node: a draggable header, an optional
@@ -80,11 +139,11 @@ export function NodeShell({
   /** Live dimensions while dragging, so the badge can read out. */
   const [live, setLive] = useState<{ w: number; h: number } | null>(null);
 
-  // Resizing is its own tool. Keeping it out of select means a drag near a
-  // card edge can never be read as "resize" when you meant "move", and it lets
-  // the grips stay permanently visible while the tool is active rather than
-  // appearing on hover and being hunted for.
-  const canResize = resizable && tool === "resize";
+  // Resize is part of selection, not a mode. Click a card and it alone shows
+  // its handles; click away and they go. That is how every major canvas app
+  // works, and it means the handles are never on a card you are not looking
+  // at. The hand tool shows none, because it exists to touch nothing.
+  const canResize = resizable && selected === true && tool === "select";
 
   const commitSize = (w: number, h: number) => {
     if (nodeId && isNodeId(nodeId)) {
@@ -111,42 +170,16 @@ export function NodeShell({
       className={cn(
         "pos-card group/card relative flex flex-col overflow-visible rounded-2xl border bg-card shadow-card transition-shadow",
         selected ? "border-olive shadow-float" : "border-card-border",
-        canResize && "pos-card--resizable",
         live && "pos-resizing",
       )}
     >
       {canResize && (
-        <>
-          {/* Edges: no visible chrome, just a wider grab strip and a cursor. */}
-          {EDGES.map((edge) => (
-            <NodeResizeControl
-              key={edge}
-              position={edge}
-              minWidth={minWidth}
-              minHeight={minHeight}
-              onResize={(_, p) => setLive({ w: p.width, h: p.height })}
-              onResizeEnd={(_, p) => commitSize(p.width, p.height)}
-              variant={ResizeControlVariant.Line}
-              className={`pos-resize-edge pos-resize-edge--${edge}`}
-            />
-          ))}
-
-          {/* Corners: a small grip that fades in with the card. */}
-          {CORNERS.map((corner) => (
-            <NodeResizeControl
-              key={corner}
-              position={corner}
-              minWidth={minWidth}
-              minHeight={minHeight}
-              onResize={(_, p) => setLive({ w: p.width, h: p.height })}
-              onResizeEnd={(_, p) => commitSize(p.width, p.height)}
-              className={`pos-resize-corner pos-resize-corner--${corner}`}
-              style={{ background: "transparent", border: "none" }}
-            >
-              <span className="pos-grip" aria-hidden />
-            </NodeResizeControl>
-          ))}
-        </>
+        <SelectionHandles
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onLive={(w, h) => setLive({ w, h })}
+          onCommit={commitSize}
+        />
       )}
 
       {/* Live size readout, only while dragging. */}

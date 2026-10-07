@@ -5,18 +5,20 @@ import { createContext, useContext } from "react";
 /**
  * The active canvas tool, in the spirit of tldraw's toolbar.
  *
- *  - "select": the normal mode. Cards move by their header, text selects, and
- *    dragging empty canvas draws a selection marquee.
- *  - "hand": dragging anywhere pans, including across a card. Cards cannot be
- *    moved by accident, which is what you want on a dense canvas.
- *  - "resize": cards hold still and show their resize grips. Separating this
- *    from select means a card can never be resized when you meant to move it,
- *    and the grips can be permanently visible instead of appearing on hover.
+ *  - "select": the normal mode, and the only one most people ever need. Click
+ *    a card to select it; the selected card shows its resize handles. Drag a
+ *    card's header to move it, a handle to resize it, or empty canvas to pan.
+ *    Shift+drag on empty canvas draws a selection box.
+ *  - "hand": dragging anywhere pans, including across a card, and nothing can
+ *    be moved or resized. This is the safe mode for a dense canvas, and it is
+ *    deliberately pan-only — Figma, Miro and tldraw all do the same, because
+ *    a hand that also moved things would just be a second arrow.
  *
- * Middle-drag and Space+drag pan in every mode, so navigating never costs you
- * a tool switch.
+ * Resize is not a tool. It belongs to the selection, the way it does in every
+ * major canvas app: there is nothing to switch into, and handles only ever
+ * appear on the card you clicked.
  */
-export const TOOL_MODES = ["select", "hand", "resize"] as const;
+export const TOOL_MODES = ["select", "hand"] as const;
 
 export type ToolMode = (typeof TOOL_MODES)[number];
 
@@ -47,10 +49,8 @@ export function nodeBodyClass(tool: ToolMode): string {
  * The class that drives every cursor on the canvas.
  *
  * Cursors are set in one place, keyed off the active tool, rather than being
- * sprinkled across components. That is what went wrong before: the card header
- * carried a permanent `cursor-grab`, so a hand appeared over cards even when
- * the select tool was active and React Flow was showing an arrow everywhere
- * else. One class, one source of truth, no contradictions.
+ * sprinkled across components. One class, one source of truth, no
+ * contradictions between what the pane shows and what a card shows.
  */
 export function toolRootClass(tool: ToolMode): string {
   return `pos-tool-${tool}`;

@@ -382,20 +382,17 @@ body {
    the select tool was active and React Flow showed an arrow everywhere else.
    One source of truth, no contradictions. */
 
-/* Select: a plain arrow. The header is draggable, but it only turns into a
-   grabbing hand once a drag is actually under way — hovering shows the arrow,
-   the way tldraw and Figma do it. */
+/* Select: a plain arrow, as in Figma. Dragging empty canvas pans, but the
+   cursor only becomes a grabbing hand once the drag is under way; the card
+   header behaves the same. Hovering never shows a hand. */
 .pos-tool-select .react-flow__pane,
 .pos-tool-select .react-flow__node,
 .pos-tool-select .pos-drag-handle {
   cursor: default;
 }
+.pos-tool-select .react-flow__pane.dragging,
 .pos-tool-select .pos-drag-handle:active {
   cursor: grabbing;
-}
-/* Dragging a marquee over empty canvas. */
-.pos-tool-select .react-flow__pane.selection {
-  cursor: crosshair;
 }
 
 /* Hand: grab everywhere. Cards sit above the panning surface, so a drag over
@@ -416,24 +413,17 @@ body {
   pointer-events: none !important;
 }
 
-/* Resize: an arrow everywhere except the grips, which carry their own
-   directional cursors further down. */
-.pos-tool-resize .react-flow__pane,
-.pos-tool-resize .react-flow__node,
-.pos-tool-resize .pos-drag-handle {
-  cursor: default;
-}
+/* --- Selection handles ---------------------------------------------------
+   Drawn on the selected card only, the way Figma, Miro and tldraw draw a
+   selection: four small square grips at the corners and invisible grab strips
+   along the edges. React Flow does the maths; this is purely the chrome. */
 
-/* --- Card resizing -------------------------------------------------------
-   React Flow does the maths; this is purely the chrome. Grips stay out of the
-   way until you approach a card, then fade in at its corners. */
-
-/* Corners: a soft rounded grip, invisible until the card is hovered.
-   The reset is scoped to corners; edges need their border to stay, because
-   React Flow uses it both to draw and to size the grab area. */
+/* Corner controls. A generous hit box around a small visible grip. The reset
+   is scoped to corners; edges need their border, because React Flow uses it
+   both to draw and to size the grab area. */
 .pos-resize-corner {
-  width: 18px !important;
-  height: 18px !important;
+  width: 22px !important;
+  height: 22px !important;
   background: transparent !important;
   border: none !important;
   display: flex;
@@ -441,36 +431,35 @@ body {
   justify-content: center;
 }
 
+/* The grip itself. It scales by the inverse of the zoom (set on the handles
+   wrapper by SelectionHandles) so it is 8px on screen at every zoom level,
+   instead of shrinking to a speck when zoomed out. */
 .pos-grip {
-  width: 10px;
-  height: 10px;
-  border-radius: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   background: var(--color-card);
   border: 1.5px solid var(--color-olive);
-  box-shadow: 0 1px 3px rgba(60, 70, 58, 0.25);
-  opacity: 0;
-  transform: scale(0.6);
-  transition:
-    opacity 120ms ease,
-    transform 120ms ease,
-    background-color 120ms ease;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-card) 80%, transparent);
+  transform: scale(var(--pos-inv-zoom, 1));
+  animation: pos-grip-in 120ms ease-out;
+  transition: background-color 100ms ease;
 }
-
-/* The grips only exist while the resize tool is active, so once they are on
-   the page they stay visible. Hunting for a hover target was the worst part of
-   the old behaviour. */
-.pos-card--resizable .pos-grip,
+.pos-resize-corner:hover .pos-grip,
 .pos-card.pos-resizing .pos-grip {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.pos-resize-corner:hover .pos-grip {
-  transform: scale(1.25);
   background: var(--color-teal);
 }
+@keyframes pos-grip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
-/* While dragging, keep the card outlined so the new bounds read clearly. */
+/* While dragging a handle, keep the card outlined so the new bounds read
+   clearly. */
 .pos-card.pos-resizing {
   outline: 1.5px solid var(--color-olive);
   outline-offset: 2px;
@@ -512,13 +501,6 @@ body {
 .pos-resize-edge--left,
 .pos-resize-edge--right {
   cursor: ew-resize;
-}
-
-/* While the resize tool is active a card gets a faint outline, so it reads as
-   "this is the thing you are about to resize" before you touch a grip. */
-.pos-card--resizable {
-  outline: 1px dashed color-mix(in srgb, var(--color-olive) 55%, transparent);
-  outline-offset: 3px;
 }
 
 /* Marquee drawn by the select tool. */

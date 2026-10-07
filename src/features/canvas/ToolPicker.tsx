@@ -1,6 +1,6 @@
 "use client";
 
-import { Expand, Hand, MousePointer2 } from "lucide-react";
+import { Hand, MousePointer2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
@@ -19,30 +19,23 @@ const TOOLS: {
   {
     id: "select",
     label: "Select",
-    hint: "Move cards by their header, drag empty canvas to select",
+    hint: "Click a card to select and resize it. Drag its header to move. Drag empty canvas to pan",
     key: "V",
     icon: <MousePointer2 size={16} />,
   },
   {
     id: "hand",
     label: "Hand",
-    hint: "Drag anywhere to pan the canvas",
+    hint: "Drag anywhere to pan, even across a card. Nothing moves or resizes",
     key: "H",
     icon: <Hand size={16} />,
-  },
-  {
-    id: "resize",
-    label: "Resize",
-    hint: "Cards hold still and show their grips. Drag a corner or an edge",
-    key: "R",
-    icon: <Expand size={16} />,
   },
 ];
 
 /**
- * Cursor, hand and resize tools, like tldraw's toolbar.
+ * Cursor and hand tools, like tldraw's toolbar.
  *
- * A radio group rather than three buttons: exactly one tool is active, so Tab
+ * A radio group rather than two buttons: exactly one tool is active, so Tab
  * reaches the group once and the arrow keys move between tools.
  */
 export function ToolPicker({
