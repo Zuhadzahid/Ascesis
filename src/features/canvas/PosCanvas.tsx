@@ -21,10 +21,12 @@ import { useCanvasStore, positionOf } from "@/features/store/canvasStore";
 import type { CanvasSnapshot } from "@/features/store/canvasSnapshot";
 import { DEFAULT_EDGES, isNodeId, type NodeId } from "./defaultLayout";
 import { EDGE_TYPES, NODE_TYPES } from "./nodes/nodeTypes";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemePicker } from "@/features/theme/ThemePicker";
 import { CanvasToolbar } from "./CanvasToolbar";
 import { FontPicker } from "./FontPicker";
 import { ToolPicker } from "./ToolPicker";
-import { ToolModeProvider, type ToolMode } from "./toolMode";
+import { ToolModeProvider, toolRootClass, type ToolMode } from "./toolMode";
 import { NODES_FOR_VIEW, parseViewTab } from "./views";
 import { useCanvasSync } from "@/features/store/useCanvasSync";
 import { AiAssistant } from "@/features/ai/AiAssistant";
@@ -104,8 +106,13 @@ function Canvas({
     return () => cancelAnimationFrame(id);
   }, [tab, visibleNodes, buildNodes, setNodes, fitView]);
 
-  // V and H switch tools, the way every canvas app does it.
+  // V, H and R switch tools, the way every canvas app does it.
   useEffect(() => {
+    const SHORTCUTS: Record<string, ToolMode> = {
+      v: "select",
+      h: "hand",
+      r: "resize",
+    };
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       if (
@@ -116,8 +123,8 @@ function Canvas({
       )
         return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "v" || e.key === "V") setTool("select");
-      if (e.key === "h" || e.key === "H") setTool("hand");
+      const next = SHORTCUTS[e.key.toLowerCase()];
+      if (next) setTool(next);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -164,54 +171,61 @@ function Canvas({
 
   return (
     <ToolModeProvider value={tool}>
-      <div className={cn("absolute inset-0", tool === "hand" && "pos-hand")}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          nodeTypes={NODE_TYPES}
-          edgeTypes={EDGE_TYPES}
-          // Wheel pans, ctrl/cmd+wheel zooms — matches the previous canvas feel.
-          panOnScroll
-          zoomOnScroll={false}
-          zoomOnPinch
-          zoomOnDoubleClick={false}
-          // The two tools have to do genuinely different things, or the arrow
-          // is decorative. Select drags a marquee over empty canvas; hand
-          // drags the canvas itself. Middle-drag and space+drag always pan, so
-          // navigating never requires switching tool.
-          panOnDrag={tool === "hand" ? true : [1]}
-          selectionOnDrag={tool === "select"}
-          selectionMode={SelectionMode.Partial}
-          panActivationKeyCode="Space"
-          nodesConnectable={false}
-          nodesDraggable={tool === "select"}
-          elevateNodesOnSelect
-          minZoom={0.2}
-          maxZoom={2.5}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={24}
-            size={1.4}
-            color="rgba(122, 141, 115, 0.28)"
-          />
-        </ReactFlow>
+      <TooltipProvider>
+        <div className={cn("absolute inset-0", toolRootClass(tool))}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            nodeTypes={NODE_TYPES}
+            edgeTypes={EDGE_TYPES}
+            // Wheel pans, ctrl/cmd+wheel zooms — matches the previous canvas feel.
+            panOnScroll
+            zoomOnScroll={false}
+            zoomOnPinch
+            zoomOnDoubleClick={false}
+            // Each tool has to do something genuinely different, or it is
+            // decorative. Select drags a marquee over empty canvas; hand drags
+            // the canvas itself; resize holds cards still so a grip drag cannot
+            // be confused with a move. Middle-drag and Space+drag always pan, so
+            // navigating never requires switching tool.
+            panOnDrag={tool === "hand" ? true : [1]}
+            selectionOnDrag={tool === "select"}
+            selectionMode={SelectionMode.Partial}
+            panActivationKeyCode="Space"
+            nodesConnectable={false}
+            nodesDraggable={tool === "select"}
+            elevateNodesOnSelect
+            minZoom={0.2}
+            maxZoom={2.5}
+            proOptions={{ hideAttribution: true }}
+          >
+            {/* The dot colour is a theme token, so the grid follows the theme
+              instead of staying olive on a dark background. */}
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={24}
+              size={1.4}
+              color="var(--color-dot)"
+            />
+          </ReactFlow>
 
-        <CanvasToolbar onResetLayout={resetLayout} />
+          <CanvasToolbar onResetLayout={resetLayout} />
 
-        <AiAssistant today={today} weekStartsOn={weekStartsOn} />
+          <AiAssistant today={today} weekStartsOn={weekStartsOn} />
 
-        {/* Tool bar, bottom centre (tldraw-like). */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-3">
-          <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-card-border bg-card/95 px-2 py-1.5 shadow-float backdrop-blur">
-            <ToolPicker tool={tool} onChange={setTool} />
-            <div className="mx-1 h-5 w-px bg-card-border" />
-            <FontPicker />
+          {/* Tool bar, bottom centre (tldraw-like): three tools, then the two
+            appearance controls. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-3">
+            <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-card-border bg-card/95 px-2 py-1.5 shadow-float backdrop-blur">
+              <ToolPicker tool={tool} onChange={setTool} />
+              <div className="mx-1 h-5 w-px bg-card-border" />
+              <FontPicker />
+              <ThemePicker />
+            </div>
           </div>
         </div>
-      </div>
+      </TooltipProvider>
     </ToolModeProvider>
   );
 }

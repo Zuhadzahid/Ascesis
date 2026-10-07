@@ -1,30 +1,50 @@
 "use client";
 
-import { Hand, MousePointer2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Expand, Hand, MousePointer2 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { ToolMode } from "./toolMode";
 
 const TOOLS: {
   id: ToolMode;
   label: string;
   hint: string;
+  key: string;
   icon: React.ReactNode;
 }[] = [
   {
     id: "select",
     label: "Select",
-    hint: "Move cards, drag a box to select (V)",
+    hint: "Move cards by their header, drag empty canvas to select",
+    key: "V",
     icon: <MousePointer2 size={16} />,
   },
   {
     id: "hand",
     label: "Hand",
-    hint: "Drag anywhere to pan (H). Space+drag also works",
+    hint: "Drag anywhere to pan the canvas",
+    key: "H",
     icon: <Hand size={16} />,
+  },
+  {
+    id: "resize",
+    label: "Resize",
+    hint: "Cards hold still and show their grips. Drag a corner or an edge",
+    key: "R",
+    icon: <Expand size={16} />,
   },
 ];
 
-/** Cursor and hand tools, like tldraw's toolbar. */
+/**
+ * Cursor, hand and resize tools, like tldraw's toolbar.
+ *
+ * A radio group rather than three buttons: exactly one tool is active, so Tab
+ * reaches the group once and the arrow keys move between tools.
+ */
 export function ToolPicker({
   tool,
   onChange,
@@ -33,25 +53,30 @@ export function ToolPicker({
   onChange: (tool: ToolMode) => void;
 }) {
   return (
-    <div className="flex items-center gap-0.5">
+    <ToggleGroup
+      type="single"
+      value={tool}
+      // Radix fires an empty string when the active item is pressed again.
+      // A canvas always has a tool, so that press is simply ignored.
+      onValueChange={(next) => next && onChange(next as ToolMode)}
+      aria-label="Canvas tool"
+    >
       {TOOLS.map((t) => (
-        <button
-          key={t.id}
-          type="button"
-          aria-label={t.label}
-          aria-pressed={tool === t.id}
-          title={`${t.label} — ${t.hint}`}
-          onClick={() => onChange(t.id)}
-          className={cn(
-            "rounded-full p-1.5 transition-colors",
-            tool === t.id
-              ? "bg-teal text-ink"
-              : "text-ink-soft hover:bg-beige-200 hover:text-ink",
-          )}
-        >
-          {t.icon}
-        </button>
+        <Tooltip key={t.id}>
+          <TooltipTrigger asChild>
+            <ToggleGroupItem value={t.id} aria-label={t.label}>
+              {t.icon}
+            </ToggleGroupItem>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <span className="font-medium">{t.label}</span>
+            <kbd className="ml-1.5 rounded bg-chrome-fg/15 px-1 py-0.5 text-[10px]">
+              {t.key}
+            </kbd>
+            <span className="mt-0.5 block text-chrome-fg/70">{t.hint}</span>
+          </TooltipContent>
+        </Tooltip>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }

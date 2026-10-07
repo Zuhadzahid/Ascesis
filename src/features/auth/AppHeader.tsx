@@ -15,9 +15,9 @@ export function AppHeader({
   email: string | null;
 }) {
   return (
-    <header className="z-30 flex h-14 shrink-0 items-center gap-4 border-b border-olive-900/40 bg-olive-900 px-4 text-beige">
+    <header className="z-30 flex h-14 shrink-0 items-center gap-4 border-b border-chrome-border bg-chrome px-4 text-chrome-fg">
       <div className="flex shrink-0 items-center gap-2">
-        <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-beige-100">
+        <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-chrome-fg">
           <Image
             src="/logo.png"
             alt=""
@@ -68,7 +68,7 @@ function ViewTabs() {
               "shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
               active === tab.id
                 ? "bg-teal text-ink"
-                : "text-beige/70 hover:bg-beige/10 hover:text-beige",
+                : "text-chrome-fg/70 hover:bg-chrome-fg/10 hover:text-chrome-fg",
             )}
           >
             {tab.label}
@@ -95,7 +95,7 @@ function UserMenu({
         type="button"
         onClick={() => setOpen((v) => !v)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
-        className="flex items-center gap-2 rounded-full border border-beige/20 bg-beige/10 py-1 pl-1 pr-3 text-sm text-beige transition-colors hover:bg-beige/20"
+        className="flex items-center gap-2 rounded-full border border-chrome-fg/20 bg-chrome-fg/10 py-1 pr-3 pl-1 text-sm text-chrome-fg transition-colors hover:bg-chrome-fg/20"
       >
         <span className="flex size-6 items-center justify-center rounded-full bg-teal text-ink">
           <User size={14} />
@@ -104,10 +104,12 @@ function UserMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] w-52 rounded-xl border border-card-border bg-card p-1 text-ink shadow-float">
+        <div className="absolute top-[calc(100%+6px)] right-0 w-52 rounded-xl border border-card-border bg-card p-1 text-ink shadow-float">
           <div className="px-3 py-2">
             <p className="truncate text-sm font-medium">{label}</p>
-            {email && <p className="truncate text-xs text-ink-faint">{email}</p>}
+            {email && (
+              <p className="truncate text-xs text-ink-faint">{email}</p>
+            )}
           </div>
           <div className="my-1 h-px bg-card-border" />
           <form action="/auth/signout" method="post">

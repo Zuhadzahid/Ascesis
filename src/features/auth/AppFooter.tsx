@@ -6,28 +6,31 @@ import Image from "next/image";
  */
 export function AppFooter() {
   return (
-    <footer className="z-30 flex h-9 shrink-0 items-center justify-between border-t border-olive-900/40 bg-olive-900 px-4 text-[11px] text-beige/70">
+    <footer className="z-30 flex h-9 shrink-0 items-center justify-between border-t border-chrome-border bg-chrome px-4 text-[11px] text-chrome-fg/70">
       <div className="flex items-center gap-1.5">
         <Image
           src="/logo.png"
           alt=""
           width={16}
           height={16}
-          className="size-4 rounded-full bg-beige-100 object-contain"
+          className="size-4 rounded-full bg-chrome-fg object-contain"
         />
         <span>Ascesis</span>
-        <span className="text-beige/40">·</span>
+        <span className="text-chrome-fg/40">·</span>
         <span>Discipline, made visible.</span>
       </div>
       <div className="hidden items-center gap-3 sm:flex">
         <span>
-          <kbd className="rounded bg-beige/10 px-1">V</kbd> select, drag to box
+          <kbd className="rounded bg-chrome-fg/10 px-1">V</kbd> select, drag to
+          box
         </span>
         <span>
-          <kbd className="rounded bg-beige/10 px-1">H</kbd> hand, drag to pan
+          <kbd className="rounded bg-chrome-fg/10 px-1">H</kbd> hand, drag to
+          pan
         </span>
         <span>
-          <kbd className="rounded bg-beige/10 px-1">Space</kbd> + drag to pan
+          <kbd className="rounded bg-chrome-fg/10 px-1">Space</kbd> + drag to
+          pan
         </span>
       </div>
     </footer>

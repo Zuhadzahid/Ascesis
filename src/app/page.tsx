@@ -4,7 +4,11 @@ import { CalendarDays, Flame, StickyNote } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-full bg-beige">
+    // Pinned to the default theme. The marketing page is the product's face to
+    // someone who has never seen it, so it stays on brand regardless of what a
+    // signed-in user picked for their own canvas. This works because the
+    // [data-theme] rules match any element, not just :root.
+    <main data-theme="ascesis" className="min-h-full bg-beige">
       {/* Nav */}
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
@@ -28,11 +32,11 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-3xl px-6 pb-10 pt-12 text-center">
-        <p className="mb-4 text-sm font-medium uppercase tracking-[0.18em] text-olive">
+      <section className="mx-auto max-w-3xl px-6 pt-12 pb-10 text-center">
+        <p className="mb-4 text-sm font-medium tracking-[0.18em] text-olive uppercase">
           A personal operating system
         </p>
-        <h1 className="text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+        <h1 className="text-4xl leading-tight font-semibold text-ink sm:text-5xl">
           Monk Mode,
           <br /> on one calm canvas.
         </h1>

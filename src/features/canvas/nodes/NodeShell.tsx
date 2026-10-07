@@ -80,7 +80,11 @@ export function NodeShell({
   /** Live dimensions while dragging, so the badge can read out. */
   const [live, setLive] = useState<{ w: number; h: number } | null>(null);
 
-  const canResize = resizable && tool === "select";
+  // Resizing is its own tool. Keeping it out of select means a drag near a
+  // card edge can never be read as "resize" when you meant "move", and it lets
+  // the grips stay permanently visible while the tool is active rather than
+  // appearing on hover and being hunted for.
+  const canResize = resizable && tool === "resize";
 
   const commitSize = (w: number, h: number) => {
     if (nodeId && isNodeId(nodeId)) {
@@ -107,6 +111,7 @@ export function NodeShell({
       className={cn(
         "pos-card group/card relative flex flex-col overflow-visible rounded-2xl border bg-card shadow-card transition-shadow",
         selected ? "border-olive shadow-float" : "border-card-border",
+        canResize && "pos-card--resizable",
         live && "pos-resizing",
       )}
     >
@@ -146,16 +151,20 @@ export function NodeShell({
 
       {/* Live size readout, only while dragging. */}
       {live && (
-        <span className="pointer-events-none absolute -top-7 right-0 z-20 rounded-full bg-olive-900 px-2 py-0.5 text-[11px] font-medium tabular-nums text-beige shadow-float">
+        <span className="pointer-events-none absolute -top-7 right-0 z-20 rounded-full bg-chrome px-2 py-0.5 text-[11px] font-medium text-chrome-fg tabular-nums shadow-float">
           {Math.round(live.w)} × {Math.round(live.h)}
         </span>
       )}
 
       <Handle type="target" position={Position.Top} className="!opacity-0" />
 
+      {/* No cursor classes here on purpose. The header used to be permanently
+          `cursor-grab`, which put a hand over every card even when the select
+          tool was active and the rest of the canvas showed an arrow. Cursors
+          now come from one place: the `pos-tool-*` rules in globals.css. */}
       <header
         className={cn(
-          "pos-drag-handle flex cursor-grab items-center gap-2 px-3 py-2 active:cursor-grabbing",
+          "pos-drag-handle flex items-center gap-2 px-3 py-2",
           accentClass,
         )}
       >
@@ -165,7 +174,9 @@ export function NodeShell({
         />
         {icon}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold leading-tight">{title}</p>
+          <p className="truncate text-sm leading-tight font-semibold">
+            {title}
+          </p>
           {subtitle && (
             <p
               className={cn(
