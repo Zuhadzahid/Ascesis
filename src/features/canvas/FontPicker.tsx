@@ -2,6 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Check, PenLine } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export const FONT_CHOICES = [
@@ -36,6 +46,10 @@ export type FontId = (typeof FONT_CHOICES)[number]["id"];
 const STORAGE_KEY = "ascesis:font";
 const DEFAULT_FONT: FontId = "handwritten";
 
+function isFontId(value: unknown): value is FontId {
+  return FONT_CHOICES.some((f) => f.id === value);
+}
+
 function applyFont(id: FontId) {
   document.documentElement.dataset.font = id;
   try {
@@ -51,91 +65,83 @@ function applyFont(id: FontId) {
  * applied to the whole app by swapping --font-sans on <html>.
  */
 export function FontPicker() {
-  const [open, setOpen] = useState(false);
-
-  // Read whatever the inline bootstrap script already applied. This component
-  // only ever renders on the client (the canvas is loaded with ssr: false), so
-  // touching `document` in the initialiser is safe and avoids a flash.
+  // Read whatever the bootstrap script already applied, so the picker agrees
+  // with what is on screen rather than racing it.
   const [font, setFont] = useState<FontId>(() => {
     if (typeof document === "undefined") return DEFAULT_FONT;
-    const current = document.documentElement.dataset.font as FontId | undefined;
-    return current && FONT_CHOICES.some((f) => f.id === current)
-      ? current
-      : DEFAULT_FONT;
+    const current = document.documentElement.dataset.font;
+    return isFontId(current) ? current : DEFAULT_FONT;
   });
 
-  // Make sure the attribute exists even when nothing was stored.
+  // Write the attribute if the bootstrap script did not. State already holds
+  // the default, so only the document needs correcting.
   useEffect(() => {
-    if (!document.documentElement.dataset.font) {
-      document.documentElement.dataset.font = DEFAULT_FONT;
+    if (!isFontId(document.documentElement.dataset.font)) {
+      applyFont(DEFAULT_FONT);
     }
   }, []);
 
   const choose = (id: FontId) => {
     setFont(id);
     applyFont(id);
-    setOpen(false);
   };
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        aria-label="Typeface"
-        title="Typeface"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          "rounded-full p-1.5 transition-colors",
-          open
-            ? "bg-teal text-ink"
-            : "text-ink-soft hover:bg-beige-200 hover:text-ink",
-        )}
-      >
-        <PenLine size={16} />
-      </button>
+    <Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger
+            aria-label="Typeface"
+            className={cn(
+              "inline-flex size-8 items-center justify-center rounded-full text-ink-soft transition-colors outline-none",
+              "hover:bg-beige-200 hover:text-ink",
+              "focus-visible:ring-2 focus-visible:ring-olive focus-visible:ring-offset-1 focus-visible:ring-offset-card",
+              "data-[state=open]:bg-teal data-[state=open]:text-ink",
+            )}
+          >
+            <PenLine size={16} />
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <span className="font-medium">Typeface</span>
+          <span className="mt-0.5 block text-chrome-fg/70">
+            Changes the font across the whole app
+          </span>
+        </TooltipContent>
+      </Tooltip>
 
-      {open && (
-        <>
-          {/* Click-away layer */}
-          <div
-            className="fixed inset-0 z-30"
-            onClick={() => setOpen(false)}
-            aria-hidden
-          />
-          <div className="absolute bottom-[calc(100%+10px)] left-1/2 z-40 w-52 -translate-x-1/2 rounded-xl border border-card-border bg-card p-1 shadow-float">
-            <p className="px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-              Typeface
-            </p>
-            {FONT_CHOICES.map((choice) => (
-              <button
-                key={choice.id}
-                type="button"
-                onClick={() => choose(choice.id)}
-                className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors",
-                  font === choice.id ? "bg-tea/70" : "hover:bg-beige-200",
-                )}
+      <PopoverContent side="top" className="w-56">
+        <p className="px-2.5 py-1.5 text-[11px] font-medium tracking-wide text-ink-faint uppercase">
+          Typeface
+        </p>
+        {FONT_CHOICES.map((choice) => (
+          <button
+            key={choice.id}
+            type="button"
+            onClick={() => choose(choice.id)}
+            aria-pressed={font === choice.id}
+            className={cn(
+              "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors",
+              font === choice.id ? "bg-tea/70" : "hover:bg-beige-200",
+            )}
+          >
+            <span className="min-w-0">
+              <span
+                className="block truncate text-sm text-ink"
+                style={{ fontFamily: choice.css }}
               >
-                <span className="min-w-0">
-                  <span
-                    className="block truncate text-sm text-ink"
-                    style={{ fontFamily: choice.css }}
-                  >
-                    {choice.label}
-                  </span>
-                  <span className="block truncate text-[11px] text-ink-faint">
-                    {choice.hint}
-                  </span>
-                </span>
-                {font === choice.id && (
-                  <Check size={14} className="shrink-0 text-olive" />
-                )}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+                {choice.label}
+              </span>
+              <span className="block truncate text-[11px] text-ink-faint">
+                {choice.hint}
+              </span>
+            </span>
+            {font === choice.id && (
+              <Check size={14} className="shrink-0 text-olive" />
+            )}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   );
 }
