@@ -1,0 +1,375 @@
+@import "tailwindcss";
+
+/*
+ * Ascesis design tokens.
+ * Exact palette from docs/color-theme.png:
+ *   Beige      #F1F3E0
+ *   Tea Green  #D2DCB6
+ *   Muted Teal #A1BC98  (labelled "Muted Teal" in the source, a soft green)
+ *   Dusty Olive#778873
+ */
+@theme {
+  --color-beige: #f1f3e0;
+  --color-tea: #d2dcb6;
+  --color-teal: #a1bc98;
+  --color-olive: #778873;
+
+  /* Derived shades for surfaces, borders and text. */
+  --color-beige-100: #f6f7ec;
+  --color-beige-200: #e9ecd7;
+  --color-tea-300: #c6d2a3;
+  --color-teal-600: #8aa681;
+  --color-olive-700: #5f6e5b;
+  --color-olive-900: #3c463a;
+
+  --color-ink: #3c463a; /* primary text: darkened olive */
+  --color-ink-soft: #5f6e5b;
+  --color-ink-faint: #8a9585;
+
+  --color-card: #fbfcf5;
+  --color-card-border: #d8e0c2;
+
+  --color-danger: #b4553f;
+  --color-danger-soft: #e7c3ba;
+
+  /* Default typeface: handwritten, to match the drawn-on-paper canvas. The
+     picker swaps this by setting data-font on <html> (see below). */
+  --font-sans:
+    var(--font-playpen), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  --shadow-card: 0 1px 2px rgba(60, 70, 58, 0.08), 0 4px 12px rgba(60, 70, 58, 0.06);
+  --shadow-float: 0 6px 24px rgba(60, 70, 58, 0.16);
+
+  --radius-card: 12px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-beige);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The canvas viewport suppresses native gestures so wheel/pinch are ours. */
+.wc-viewport {
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Excalidraw-style dot grid, drawn with a repeating radial gradient so it
+   costs nothing and scales with the transform when applied to the world. */
+.wc-dotgrid {
+  background-image: radial-gradient(
+    circle,
+    rgba(122, 141, 115, 0.28) 1px,
+    transparent 1.4px
+  );
+}
+
+/* Thin, tasteful scrollbars inside day columns. */
+.wc-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-teal) transparent;
+}
+.wc-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.wc-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-teal);
+  border-radius: 8px;
+}
+
+@keyframes wc-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.wc-pop {
+  animation: wc-pop 120ms ease-out;
+}
+
+/* Rendered markdown inside detail popover / panel. */
+.wc-md {
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.wc-md h1,
+.wc-md h2,
+.wc-md h3 {
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+  line-height: 1.25;
+}
+.wc-md h1 {
+  font-size: 1.1rem;
+}
+.wc-md h2 {
+  font-size: 1rem;
+}
+.wc-md h3 {
+  font-size: 0.925rem;
+}
+.wc-md p {
+  margin: 0.4em 0;
+}
+.wc-md ul,
+.wc-md ol {
+  margin: 0.4em 0;
+  padding-left: 1.25em;
+}
+.wc-md ul {
+  list-style: disc;
+}
+.wc-md ol {
+  list-style: decimal;
+}
+.wc-md a {
+  color: var(--color-olive);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.wc-md code {
+  background: var(--color-beige-200);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.85em;
+}
+.wc-md pre {
+  background: var(--color-beige-200);
+  padding: 0.6em 0.8em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.wc-md pre code {
+  background: transparent;
+  padding: 0;
+}
+.wc-md blockquote {
+  border-left: 3px solid var(--color-teal);
+  padding-left: 0.8em;
+  color: var(--color-ink-soft);
+  margin: 0.5em 0;
+}
+/* GFM task-list checkboxes rendered read-only inside preview. */
+.wc-md input[type="checkbox"] {
+  accent-color: var(--color-olive);
+  margin-right: 0.4em;
+}
+.wc-md li.task-list-item {
+  list-style: none;
+  margin-left: -1em;
+}
+
+/* --- React Flow canvas, themed with the project palette --- */
+.react-flow {
+  --xy-background-color-default: var(--color-beige);
+  --xy-edge-stroke-default: var(--color-olive);
+  --xy-edge-stroke-selected-default: var(--color-olive);
+  --xy-node-border-radius-default: 16px;
+  --xy-selection-background-color-default: rgba(161, 188, 152, 0.16);
+  --xy-selection-border-default: 1px dashed var(--color-olive);
+}
+
+/* Nodes bring their own card styling via NodeShell. */
+.react-flow__node {
+  border: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: default;
+}
+
+.react-flow__node.selected {
+  box-shadow: none;
+}
+
+/* Connectors are decorative; hide the handles but keep them measurable. */
+.react-flow__handle {
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  min-width: 1px;
+  min-height: 1px;
+  border: none;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+/* Scroll areas inside a node must not bubble into a canvas pan. */
+.nowheel .wc-scroll {
+  overscroll-behavior: contain;
+}
+
+/* --- Typeface choices (tldraw-style font picker) ---------------------------
+   The default (handwritten Playpen Sans) is set on --font-sans in @theme.
+   These override it when the picker sets data-font on the <html> element. */
+:root[data-font="clean"] {
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+}
+:root[data-font="serif"] {
+  --font-sans: var(--font-lora), ui-serif, Georgia, Cambria, "Times New Roman",
+    serif;
+}
+:root[data-font="mono"] {
+  --font-sans:
+    var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
+}
+
+/* Handwritten faces sit slightly small next to a grotesque; nudge them up so
+   task text stays comfortable at canvas zoom levels. */
+:root[data-font="handwritten"] body,
+:root:not([data-font]) body {
+  font-size: 1.02rem;
+  letter-spacing: -0.005em;
+}
+
+/* Hand tool. Cards sit above the panning surface, so a drag over one would
+   never reach it. Making nodes transparent to pointer events lets every drag
+   fall through to the pane, which is what a hand tool should do. */
+.pos-hand .react-flow__pane {
+  cursor: grab;
+}
+.pos-hand .react-flow__pane:active {
+  cursor: grabbing;
+}
+.pos-hand .react-flow__node {
+  pointer-events: none !important;
+  cursor: grab;
+}
+.pos-hand .react-flow__renderer,
+.pos-hand .react-flow__viewport {
+  cursor: grab;
+}
+
+/* --- Card resizing -------------------------------------------------------
+   React Flow does the maths; this is purely the chrome. Grips stay out of the
+   way until you approach a card, then fade in at its corners. */
+
+/* Corners: a soft rounded grip, invisible until the card is hovered.
+   The reset is scoped to corners; edges need their border to stay, because
+   React Flow uses it both to draw and to size the grab area. */
+.pos-resize-corner {
+  width: 18px !important;
+  height: 18px !important;
+  background: transparent !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-grip {
+  width: 10px;
+  height: 10px;
+  border-radius: 4px;
+  background: var(--color-card);
+  border: 1.5px solid var(--color-olive);
+  box-shadow: 0 1px 3px rgba(60, 70, 58, 0.25);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    background-color 120ms ease;
+}
+
+.pos-card:hover .pos-grip,
+.react-flow__node.selected .pos-grip,
+.pos-card.pos-resizing .pos-grip {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.pos-resize-corner:hover .pos-grip {
+  transform: scale(1.25);
+  background: var(--color-teal);
+}
+
+/* While dragging, keep the card outlined so the new bounds read clearly. */
+.pos-card.pos-resizing {
+  outline: 1.5px solid var(--color-olive);
+  outline-offset: 2px;
+}
+
+/* Edges: React Flow positions these as 1px lines along each side. Widening the
+   border on that side alone gives a comfortable grab strip without moving it,
+   and a transparent colour keeps it invisible. */
+.react-flow__resize-control.line.pos-resize-edge {
+  border-color: transparent !important;
+  background: transparent !important;
+}
+.react-flow__resize-control.line.pos-resize-edge--top {
+  border-top-width: 6px !important;
+}
+.react-flow__resize-control.line.pos-resize-edge--bottom {
+  border-bottom-width: 6px !important;
+}
+.react-flow__resize-control.line.pos-resize-edge--left {
+  border-left-width: 6px !important;
+}
+.react-flow__resize-control.line.pos-resize-edge--right {
+  border-right-width: 6px !important;
+}
+
+/* Cursors that match the direction being dragged. */
+.pos-resize-corner--top-left,
+.pos-resize-corner--bottom-right {
+  cursor: nwse-resize;
+}
+.pos-resize-corner--top-right,
+.pos-resize-corner--bottom-left {
+  cursor: nesw-resize;
+}
+.pos-resize-edge--top,
+.pos-resize-edge--bottom {
+  cursor: ns-resize;
+}
+.pos-resize-edge--left,
+.pos-resize-edge--right {
+  cursor: ew-resize;
+}
+
+/* The hand tool should never offer a resize. */
+.pos-hand .pos-resize-corner,
+.pos-hand .pos-resize-edge {
+  display: none;
+}
+
+/* Marquee drawn by the select tool. */
+.react-flow__selection {
+  background: rgba(161, 188, 152, 0.18);
+  border: 1.5px dashed var(--color-olive);
+  border-radius: 6px;
+}
+
+/* The select tool shows a normal pointer; only the hand grabs. */
+.react-flow__pane.selection {
+  cursor: default;
+}
